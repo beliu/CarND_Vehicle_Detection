@@ -1,6 +1,4 @@
-##Writeup Template
-###You can use this file as a template for your writeup if you want to submit it as a markdown file, but feel free to use some other method and submit a pdf if you prefer.
-
+## Writeup 
 ---
 
 **Vehicle Detection Project**
@@ -8,10 +6,9 @@
 The goals / steps of this project are the following:
 
 * Perform a Histogram of Oriented Gradients (HOG) feature extraction on a labeled training set of images and train a classifier Linear SVM classifier
-* Optionally, you can also apply a color transform and append binned color features, as well as histograms of color, to your HOG feature vector. 
-* Note: for those first two steps don't forget to normalize your features and randomize a selection for training and testing.
+* Apply a color transform and append binned color features, as well as histograms of color, to your HOG feature vector. 
 * Implement a sliding-window technique and use your trained classifier to search for vehicles in images.
-* Run your pipeline on a video stream (start with the test_video.mp4 and later implement on full project_video.mp4) and create a heat map of recurring detections frame by frame to reject outliers and follow detected vehicles.
+* Run your pipeline on a video stream and create a heat map of recurring detections frame by frame to reject outliers and follow detected vehicles.
 * Estimate a bounding box for vehicles detected.
 
 [//]: # (Image References)
@@ -25,18 +22,20 @@ The goals / steps of this project are the following:
 [video1]: ./project_video.mp4
 
 ## [Rubric](https://review.udacity.com/#!/rubrics/513/view) Points
-###Here I will consider the rubric points individually and describe how I addressed each point in my implementation.  
+### Here I will consider the rubric points individually and describe how I addressed each point in my implementation.  
 
 ---
-###Writeup / README
+#### Image Data Preparation
+1. Before I extract features from the images, I first wrote a function called `make_training_files()` that takes in a collection of datasets and combines them into a large list of image file paths and file names. The function separates the car from the non-car data and shuffles them based on time-sequence so that images that are very similar are not close to each other in sequence. You can also specify whether to augment the dataset, in which case a function called `augment()` will be called. The user can specify whether to perform rotation, flips, and brightness adjustment on the dataset. I also wrote a function called `extract_images()` that I used on the larger Udacity dataset. This function extracts the image of objects based on their pixel locations found in the Udacity dataset's CSV file and saves them to a folder. In the end, I found that I did not need to use either augmentation and the Udacity dataset to supplement the existing dataset.
 
-####1. Provide a Writeup / README that includes all the rubric points and how you addressed each one.  You can submit your writeup as markdown or pdf.  [Here](https://github.com/udacity/CarND-Vehicle-Detection/blob/master/writeup_template.md) is a template writeup for this project you can use as a guide and a starting point.  
 
-You're reading it!
+#### Feature Extraction, Including Histogram of Oriented Gradients (HOG)
+#### 1. Explain how (and identify where in your code) you extracted image features from the training images.
+I created a function called `extract_features()` to extract HOG features from an image and append those features to the image's spatial features and a histogram of the image's features in a particular color space. In `extract_features()` lines 17 to 52, the user supplies a dictionary of the settings for each type of feature extraction operation. Then each image from a list of images are read and a vector of features is created by concatenating the spatial, histogram, and HOG features together. Each new image feature vector is appended to a list called `features`. This step is in lines 52 to 54. 
 
-###Histogram of Oriented Gradients (HOG)
+#### 2. Explain how you settled on your final choice of HOG parameters.
+I created a function called `make_svc()` which takes in as input a dictionary of the parameters for each type of feature extraction. The function extracts the features from the images in the dataset by calling `extract_features()` and combines the feature vector of each image into a large array. I then use `sklearn.preprocessing.StandardScaler()` on this features array to normalize the data. This is done in lines 19 to 25 of the function `make_svc()`. The standardized features array is split into a training and validation set. I then use sklearn's `LinearSVC()` on the training dataset to train a classifier. After the classifier is done training, I calculate the model's accuracy on the validation set as a metric to determine whether the parameters I chose for feature extraction is good. This is done in lines 45 to 51 of `make_svc()`. 
 
-####1. Explain how (and identify where in your code) you extracted HOG features from the training images.
 
 The code for this step is contained in the first code cell of the IPython notebook (or in lines # through # of the file called `some_file.py`).  
 
@@ -51,7 +50,7 @@ Here is an example using the `YCrCb` color space and HOG parameters of `orientat
 
 ![alt text][image2]
 
-####2. Explain how you settled on your final choice of HOG parameters.
+
 
 I tried various combinations of parameters and...
 
