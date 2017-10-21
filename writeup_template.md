@@ -22,7 +22,6 @@ The goals / steps of this project are the following:
 
 ## [Rubric](https://review.udacity.com/#!/rubrics/513/view) Points
 ### Here I will consider the rubric points individually and describe how I addressed each point in my implementation.  
-
 ---
 ### Image Data Preparation
 Before I extract features from the images, I first wrote a function called `make_training_files()` that takes in a collection of datasets and combines them into a large list of image file paths and file names. The function separates the car from the non-car data and shuffles them based on time-sequence so that images that are very similar are not close to each other in sequence. You can also specify whether to augment the dataset, in which case a function called `augment()` will be called. The user can specify whether to perform rotation, flips, and brightness adjustment on the dataset. I also wrote a function called `extract_images()` that I used on the larger Udacity dataset. This function extracts the image of objects based on their pixel locations found in the Udacity dataset's CSV file and saves them to a folder. In the end, I found that I did not need to use either augmentation and the Udacity dataset to supplement the existing dataset.
