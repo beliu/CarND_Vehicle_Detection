@@ -16,8 +16,13 @@ The goals / steps of this project are the following:
 [image3]: ./output_images/scale_1_sliding_windows.png
 [image4]: ./output_images/scale_1.5_sliding_windows.png
 [image5]: ./output_images/scale_2_sliding_windows.png
-[image6]: ./examples/labels_map.png
-[image7]: ./examples/output_bboxes.png
+[image6]: ./output_images/find_cars_with_1.5_scale_window.png
+[image7]: ./output_images/find_cars_w_2_scale_window.png
+[image8]: ./output_images/car_frames.png
+[image9]: ./output_images/heat_maps.png
+[image10]: ./output_images/detection_boxes.png
+[image11]: ./output_images/pipeline_frame_found_car.png
+[image12]: ./output_images/pipeline_shot_track_images.png
 [video1]: ./project_video.mp4
 
 ## [Rubric](https://review.udacity.com/#!/rubrics/513/view) Points
@@ -50,19 +55,15 @@ If the user wants to use spatial and color histogram information, then the next 
 
 The entire process described above repeats until the same-scaled window slides up and down the image. If there is more than one scale, we repeate the process with the new scale. Each time the classifier predicts that the sub-image found within the window is a car, it will add the coordinates of the bounding box corners to a list. Once all windows are completed, the list will contain all the corner coordinates of the bounding box surrounding positive detections. Below are images that show the location of different scaled sliding windows as they traverse up and down the image, with an overlap of 2 cells per step.
 
-Scale 1
 ![Multi-Scale Search Windows Scale 1][image3]
-Scale 1.5
 ![Multi-Scale Search Windows Scale 1.5][image4]
-Scale 2
 ![Multi-Scale Search Windows Scale 2][image5]
 
 #### 2. Show some examples of test images to demonstrate how your pipeline is working.  What did you do to optimize the performance of your classifier?
-Below is an example of the car detection function `find_cars()` on a three test images.
+Below is an example of the car detection function `find_cars()` on a two test images. The first image uses a 1.5 scaled window and the second image uses a 2 scaled window
 
-![Test Image 1][image4]
-![Test Image 2][image4]
-![Test Image 3][image4]
+![Test Image 1][image6]
+![Test Image 2][image7]
 
 ---
 
@@ -73,9 +74,10 @@ Here's a [link to my video result](./project_video.mp4)
 #### 2. Describe how (and identify where in your code) you implemented some kind of filter for false positives and some method for combining overlapping bounding boxes.
 The function `process_image()` takes a frame (image) from the video and applies a multi-scale sliding window search method to detect cars in the frame. Through experimentation, I found that the window scale factors of 0.5, 1.25, and 1.5 applied to the y-regions of (400, 450), (400, 600), and (400 656) respectively produced the highest true-positive detection rate and the lowest false-positive detection rate. So, for each window scale, I slide the window in the specified region of the frame and get the bounding boxes around the detections. I repeat with the remaining window scales and I combine all the bounding boxes in total. This is done in lines 21 to 31 of `process_image()`. Afterwards, I convert the bounding boxes into heat maps by looping through the area encapsulated by each bounding box and incrementing the pixel values in those areas. 
 
-In order to detect cars with higher confidence and to reject false positives, I accumulate heat maps across several frames. The specific number of frames can be adjusted but I found that 5 to 6 frames works well. For debugging purposes, I store a record of each frame's heat map to a list such that the i-th index of the list has a heat map corresponding to the i-th frame's detection. Below are some examples of heatmaps corresponding to subsequent frames from the video. Note that the images show the detected bounding boxes that result in the heatmaps shown.
+In order to detect cars with higher confidence and to reject false positives, I accumulate heat maps across several frames. The specific number of frames can be adjusted but I found that 5 to 6 frames works well. For debugging purposes, I store a record of each frame's heat map to a list such that the i-th index of the list has a heat map corresponding to the i-th frame's detection. Below are some examples of heatmaps corresponding to subsequent frames from the video. The first set of images show the detected bounding boxes that result in the heatmaps shown in the second set of images.
 
-![Heat Maps of Frames from Video][image5]
+![Image Frames with detected bounding boxes][image8]
+![Heat Maps of Frames from Video][image9]
 
 In order to convert the heat maps into separate, labeled entities, I use SciPy's `scipy.ndimage.measurements.label` function. I encapsulate the `label` function into one of my own called `make_labeled_boxes()` which just converts the output of `label` into a dictionary. The dictionary's keys are the label numbers and the values are the bounding box coordinates that surround the islands of heat in the heat map. So, after allowing the heat map from detected boxes to build up over 5 frames, I apply `make_labeled_boxes()` using a predefined threshold to return a dictionary of labeled boxes. If there are previous labeled boxes from past frames, I compare how much the current and previous ones overlap in lines 126 to 134 of `process_image()`. Supposing that the overlap ratio is above a predfined number, I conclude that the newly create labeled box is for the same object as the previous labeled box. Then I draw the box on the image.
 
@@ -87,9 +89,9 @@ One benefit of looking just within the bounding boxes for detection instead of t
 #### 4. Show some bounding boxes around detected objects
 Within `process_image()`, I included an option to show the bounding boxes detected in a frame. The image below on the left shows detection boxes found during a sliding window search, which are depicted as thinner light-gold boxes. The image in the middle shows a resulting high-confidence box shown in a thick blue line that encapsulates an area where the detection boxes have added to surpass a defined threshold. The image on the right shows the detection boxes when we are just looking at subimages. Note that the search area is defined by the box in black line surrounding the objects, the purple boxes are the positive detection boxes from the sliding window search, and the blue line box once again encapsulates the high-confidence heat map detection made from the purple boxes.
 
-![Detection Boxes][image]
-![High Confidence Detection][image]
-![Subimage Detection Boxes][image]
+![Detection Boxes][image10]
+![High Confidence Detection][image11]
+![Subimage Detection Boxes][image12]
 
 ---
 
