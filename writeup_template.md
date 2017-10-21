@@ -11,11 +11,11 @@ The goals / steps of this project are the following:
 * Estimate a bounding box for vehicles detected.
 
 [//]: # (Image References)
-[image1]: ./output_images/hsv_hog_features.png
-[image2]: ./output_images/ycrcb_hog_features.png
-[image3]: ./examples/sliding_windows.jpg
-[image4]: ./examples/sliding_window.jpg
-[image5]: ./examples/bboxes_and_heat.png
+[image1]: ./output_images/car_and_hsv_space.png
+[image2]: ./output_images/car_and_ycrcb_space.png
+[image3]: ./output_images/scale_1_sliding_windows.png
+[image4]: ./output_images/scale_1.5_sliding_windows.png
+[image5]: ./output_images/scale_2_sliding_windows.png
 [image6]: ./examples/labels_map.png
 [image7]: ./examples/output_bboxes.png
 [video1]: ./project_video.mp4
@@ -31,8 +31,10 @@ Before I extract features from the images, I first wrote a function called `make
 #### 1. Explain how (and identify where in your code) you extracted image features from the training images.
 I created a function called `extract_features()` to extract an unraveled vector of HOG features from an image and append those features to the image's spatial features and a histogram of the image's features in a particular color space. In `extract_features()` lines 17 to 52, the user supplies a dictionary of the settings for each type of feature extraction operation. Then each image from a list of images are read and a vector of features is created by concatenating the spatial, histogram, and HOG features together. Each new image feature vector is appended to a list called `features`. This step is in lines 52 to 54. The two images below show an example of the dominant gradients for an image in the HSV and YCrCb color space respectively.
 
-![HOG HSV Space][image1]
-![HOG YCrCb Space][image2]
+![Car in HSV Space][image1]
+<img src="./output_images/hsv_hog_features.png" width="640">
+![Car in YCrCb Space][image2]
+<img src="./output_images/ycrcb_hog_features.png" width="640">
 
 #### 2. Describe how (and identify where in your code) you trained a classifier using your selected HOG features (and color features if you used them). 
 I created a function called `make_svc()` which takes in as input a dictionary of the parameters for each type of feature extraction. The function extracts the features from the images in the dataset by calling `extract_features()` and combines the feature vector of each image into a large array. I then use `sklearn.preprocessing.StandardScaler()` on this features array to normalize the data. This is done in lines 19 to 25 of the function `make_svc()`. The standardized features array is split into a training and validation set. I then use sklearn's `LinearSVC()` on the training dataset to train a classifier. After the classifier is done training, I calculate the model's accuracy on the validation set as a metric to determine whether the parameters I chose for feature extraction is good. This is done in lines 45 to 51 of `make_svc()`. 
@@ -46,9 +48,14 @@ I implemented a sliding window search in the function `find_cars()`. This functi
 
 If the user wants to use spatial and color histogram information, then the next step is to take the patch of image defined by the window, resize it to be (64, 64) and get its spatial and histogram features per channel. These features are appended to the HOG features and the entire vector is passed into the LinearSVC. If the classifier predicts that the sub-image is a car, it will output the top left and bottom right coordinates of a bounding box that surrounds the sub-image. This is done in lines 89 to 101 of `find_cars()`.
 
-The entire process described above until the same-scaled window slides up and own the image. If there is more than one scale, we repeate the process with the new scale. Each time the classifier predicts that the sub-image found within the window is a car, it will add the coordinates of the bounding box corners to a list. Once all windows are completed, the list will contain all the corner coordinates of the bounding box surrounding positive detections.
+The entire process described above repeats until the same-scaled window slides up and down the image. If there is more than one scale, we repeate the process with the new scale. Each time the classifier predicts that the sub-image found within the window is a car, it will add the coordinates of the bounding box corners to a list. Once all windows are completed, the list will contain all the corner coordinates of the bounding box surrounding positive detections. Below are images that show the location of different scaled sliding windows as they traverse up and down the image, with an overlap of 2 cells per step.
 
-![Multi-Scale Search Windows][image3]
+Scale 1
+![Multi-Scale Search Windows Scale 1][image3]
+Scale 1.5
+![Multi-Scale Search Windows Scale 1.5][image4]
+Scale 2
+![Multi-Scale Search Windows Scale 2][image5]
 
 #### 2. Show some examples of test images to demonstrate how your pipeline is working.  What did you do to optimize the performance of your classifier?
 Below is an example of the car detection function `find_cars()` on a three test images.
