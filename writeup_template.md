@@ -23,7 +23,7 @@ The goals / steps of this project are the following:
 [image10]: ./output_images/detection_boxes.png
 [image11]: ./output_images/pipeline_frame_found_car.png
 [image12]: ./output_images/pipeline_shot_track_images.png
-[video1]: ./project_video.mp4
+[video1]: ./project_output.mp4
 
 ## [Rubric](https://review.udacity.com/#!/rubrics/513/view) Points
 ### Here I will consider the rubric points individually and describe how I addressed each point in my implementation.  
@@ -45,7 +45,7 @@ I created a function called `extract_features()` to extract an unraveled vector 
 I created a function called `make_svc()` which takes in as input a dictionary of the parameters for each type of feature extraction. The function extracts the features from the images in the dataset by calling `extract_features()` and combines the feature vector of each image into a large array. I then use `sklearn.preprocessing.StandardScaler()` on this features array to normalize the data. This is done in lines 19 to 25 of the function `make_svc()`. The standardized features array is split into a training and validation set. I then use sklearn's `LinearSVC()` on the training dataset to train a classifier. After the classifier is done training, I calculate the model's accuracy on the validation set as a metric to determine whether the parameters I chose for feature extraction is good. This is done in lines 45 to 51 of `make_svc()`. 
 
 #### 3. Explain how you settled on your final choice of HOG parameters.
-My main metric for determining a set of HOG parameters is by looking at the model's accuracy score on the By experimenting with different parameters and color spaces, I saw that I got fairly high accuracy if I converted the image to either HSV or YCrCb space on all three image channels. For the other parameters, I stayed with the default parameters (`orientations=9`, `pixels_per_cell=8`, and `cells_per_block=2`).
+My main metric for determining a set of HOG parameters is by looking at the model's accuracy score on the validation set. By experimenting with different parameters and color spaces, I saw that I got fairly high accuracy if I converted the image to either HSV or YCrCb space on all three image channels. For the other parameters, I stayed with the default parameters (`orientations=9`, `pixels_per_cell=8`, and `cells_per_block=2`).
 
 ### Sliding Window Search
 #### 1. Describe how (and identify where in your code) you implemented a sliding window search. How did you decide what scales to search and how much to overlap windows?
@@ -53,14 +53,14 @@ I implemented a sliding window search in the function `find_cars()`. This functi
 
 If the user wants to use spatial and color histogram information, then the next step is to take the patch of image defined by the window, resize it to be (64, 64) and get its spatial and histogram features per channel. These features are appended to the HOG features and the entire vector is passed into the LinearSVC. If the classifier predicts that the sub-image is a car, it will output the top left and bottom right coordinates of a bounding box that surrounds the sub-image. This is done in lines 89 to 101 of `find_cars()`.
 
-The entire process described above repeats until the same-scaled window slides up and down the image. If there is more than one scale, we repeate the process with the new scale. Each time the classifier predicts that the sub-image found within the window is a car, it will add the coordinates of the bounding box corners to a list. Once all windows are completed, the list will contain all the corner coordinates of the bounding box surrounding positive detections. Below are images that show the location of different scaled sliding windows as they traverse up and down the image, with an overlap of 2 cells per step.
+The entire process described above repeats until the same-scaled window slides up and down the image. If there is more than one scale, we repeat the process with the new scale. Each time the classifier predicts that the sub-image found within the window is a car, it will add the coordinates of the window corners to a list. Once all windows are completed, the list will contain all the corner coordinates of the bounding box surrounding positive detections. Below are images that show the location of different scaled sliding windows as they traverse up and down the image, with an overlap of 2 cells per step.
 
 ![Multi-Scale Search Windows Scale 1][image3]
 ![Multi-Scale Search Windows Scale 1.5][image4]
 ![Multi-Scale Search Windows Scale 2][image5]
 
 #### 2. Show some examples of test images to demonstrate how your pipeline is working.  What did you do to optimize the performance of your classifier?
-Below is an example of the car detection function `find_cars()` on a two test images. The first image uses a 1.5 scaled window and the second image uses a 2 scaled window
+Below is an example of the car detection function `find_cars()` on a two test images. The first image uses a 1.5 scaled window and the second image uses a 2 scaled window. I optimized the performance of the classifier by testing a classifer trained on HSV images and one trained on YCrCb images. I also used a variety of scaled windows one at a time for each classifier and made note of the scales that produced the highest number of boxes around the actual cars while also generating the fewest number of boxes around non-car objects. Based on trial and error, I found that YCrCb worked well and a scaled window of 1.5 and 2 captured the cars fairly well on the test images.
 
 ![Test Image 1][image6]
 ![Test Image 2][image7]
