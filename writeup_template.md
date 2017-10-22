@@ -23,7 +23,7 @@ The goals / steps of this project are the following:
 [image10]: ./output_images/detection_boxes.png
 [image11]: ./output_images/pipeline_frame_found_car.png
 [image12]: ./output_images/pipeline_shot_track_images.png
-[video1]: ./project_output.mp4
+[video1]: project_output.mp4
 
 ## [Rubric](https://review.udacity.com/#!/rubrics/513/view) Points
 ### Here I will consider the rubric points individually and describe how I addressed each point in my implementation.  
@@ -69,7 +69,7 @@ Below is an example of the car detection function `find_cars()` on a two test im
 
 ### Video Implementation
 #### 1. Provide a link to your final video output.  
-Here's a [link to my video result](./project_video.mp4)
+Here's a [link to my video result][video1]
 
 #### 2. Describe how (and identify where in your code) you implemented some kind of filter for false positives and some method for combining overlapping bounding boxes.
 The function `process_image()` takes a frame (image) from the video and applies a multi-scale sliding window search method to detect cars in the frame. Through experimentation, I found that the window scale factors of 0.5, 1.25, and 1.5 applied to the y-regions of (400, 450), (400, 600), and (400 656) respectively produced the highest true-positive detection rate and the lowest false-positive detection rate. So, for each window scale, I slide the window in the specified region of the frame and get the bounding boxes around the detections. I repeat with the remaining window scales and I combine all the bounding boxes in total. This is done in lines 21 to 31 of `process_image()`. Afterwards, I convert the bounding boxes into heat maps by looping through the area encapsulated by each bounding box and incrementing the pixel values in those areas. 
